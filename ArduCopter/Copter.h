@@ -673,6 +673,17 @@ private:
     void update_super_simple_bearing(bool force_update);
     void read_AHRS(void);
     void update_altitude();
+    uint8_t sm_glitch_samples=0;
+    uint8_t vibx_glitch_warning_samples=0;
+    uint8_t vibx_glitch_error_samples=0;
+    uint8_t viby_glitch_warning_samples=0;
+    uint8_t viby_glitch_error_samples=0;
+    uint8_t vibz_glitch_warning_samples=0;
+    uint8_t vibz_glitch_error_samples=0;
+    bool sm_failsafe_flag=0;
+    bool vib_failsafe_flag=0;
+    uint16_t sm_time_flag=0;
+    uint16_t vib_time_flag=0;
 
     // Attitude.cpp
     void update_throttle_hover();
@@ -738,6 +749,14 @@ private:
     void handle_battery_failsafe(const char* type_str, const int8_t action);
     void failsafe_gcs_check();
     void failsafe_gcs_on_event(void);
+    bool apply_sm_glitchfilter(float reading_sm);        //mag_interfer
+    void failsafe_mag_interference_on_event();
+    void failsafe_mag_interference_check();
+    void failsafe_vibration_check();          //vibration_check
+    void failsafe_vibration_on_event();
+    uint8_t apply_vib_x_glitchfilter(float vib);
+    uint8_t apply_vib_y_glitchfilter(float vib);
+    uint8_t apply_vib_z_glitchfilter(float vib);
     void failsafe_gcs_off_event(void);
     void failsafe_terrain_check();
     void failsafe_terrain_set_status(bool data_ok);

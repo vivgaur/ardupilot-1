@@ -377,9 +377,20 @@ public:
 
         k_param_vehicle = 257, // vehicle common block of parameters
 
+        k_param_glitch_sm_range,
+        k_param_glitch_sample_num,
+        k_param_glitch_vib_warning_level,
+        k_param_glitch_vib_error_level,
+        k_param_glitch_vib_num,
         // the k_param_* space is 9-bits in size
         // 511: reserved
     };
+
+    AP_Float       glitch_sm_range;
+    AP_Int8        glitch_sample_num;
+    AP_Int8        glitch_vib_warning_level;
+    AP_Int8        glitch_vib_error_level;
+    AP_Int8        glitch_vib_num;
 
     AP_Int16        format_version;
 

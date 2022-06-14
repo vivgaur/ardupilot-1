@@ -43,6 +43,26 @@
     # define ARMING_DELAY_SEC 2.0f
 #endif
 
+#ifndef GLITCH_SAMPLE_NUM_DEFAULT
+    # define GLITCH_SAMPLE_NUM_DEFAULT 3
+#endif
+
+#ifndef GLITCH_SM_RANGE_DEFAULT
+    # define GLITCH_SM_RANGE_DEFAULT 0.3f
+#endif
+
+#ifndef GLITCH_VIB_NUM_DEFAULT
+  # define GLITCH_VIB_NUM_DEFAULT  2
+#endif
+
+#ifndef GLITCH_VIB_WARN_DEFAULT
+    # define GLITCH_VIB_WARN_DEFAULT 3
+#endif
+
+#ifndef GLITCH_VIB_ERROR_DEFAULT
+    # define GLITCH_VIB_ERROR_DEFAULT 5
+#endif
+
 //////////////////////////////////////////////////////////////////////////////
 // FRAME_CONFIG
 //

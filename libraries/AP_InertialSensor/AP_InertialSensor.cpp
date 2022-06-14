@@ -1952,7 +1952,7 @@ void AP_InertialSensor::calc_vibration_and_clipping(uint8_t instance, const Vect
         fabsf(accel.z) > _backends[instance]->get_clip_limit()) {
         _accel_clip_count[instance]++;
     }
-
+     
     // calculate vibration levels
     if (instance < INS_VIBRATION_CHECK_INSTANCES) {
         // filter accel at 5hz

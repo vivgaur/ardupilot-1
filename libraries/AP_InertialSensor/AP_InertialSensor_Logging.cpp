@@ -80,8 +80,7 @@ void AP_InertialSensor::Write_Vibration() const
         if (!use_accel(i)) {
             continue;
         }
-
-        const Vector3f vibration = get_vibration_levels(i);
+              const Vector3f vibration = get_vibration_levels(i);
         const struct log_Vibe pkt{
             LOG_PACKET_HEADER_INIT(LOG_VIBE_MSG),
             time_us     : time_us,
@@ -91,7 +90,9 @@ void AP_InertialSensor::Write_Vibration() const
             vibe_z      : vibration.z,
             clipping    : get_accel_clip_count(i)
         };
+      
         AP::logger().WriteBlock(&pkt, sizeof(pkt));
+
     }
 }
 

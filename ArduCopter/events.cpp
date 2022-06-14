@@ -156,6 +156,154 @@ void Copter::failsafe_gcs_check()
     }
 }
 
+void Copter::failsafe_mag_interference_check()
+{  
+    if (motors->armed()) {
+        gcs().send_text(MAV_SEVERITY_CRITICAL,"MAV %d",sm_failsafe_flag);
+        if (!sm_failsafe_flag) {
+            gcs().send_text(MAV_SEVERITY_WARNING, "MAG-INTERFERNCE CHECK");
+            if (apply_sm_glitchfilter(ahrs.get_sm_val())) {
+            //if(((AP_HAL::millis() - sm_time_flag))*0.001 > 100) {
+                  failsafe_mag_interference_on_event();
+             }
+        } 
+    }else if (!motors->armed()) {
+        sm_failsafe_flag=0;
+        sm_time_flag = AP_HAL::millis();
+
+    }
+}
+
+void Copter::failsafe_mag_interference_on_event()
+{
+    gcs().send_text(MAV_SEVERITY_WARNING, "MAG-INTERFERNCE ERROR");
+    FailsafeAction desired_action;
+    desired_action = FailsafeAction::RTL;
+    do_failsafe_action(desired_action, ModeReason:: SM_FAILSAFE);
+    sm_failsafe_flag=1; 
+}
+
+bool Copter::apply_sm_glitchfilter(float reading_sm)
+{
+    if ((reading_sm) >= g.glitch_sm_range) {
+         sm_glitch_samples+= 1; //increment glitch sample
+        } else {  //we don't get a glitch
+         sm_glitch_samples = 0; //reset glitch samples counter
+    }
+    if (abs(sm_glitch_samples)>= g.glitch_sample_num) {
+        // log filter reading_sm 
+        AP::logger().Write("SMFV", "TimeUs,filt,raw","Qff", AP_HAL::micros64(),(double)reading_sm,(double)reading_sm);
+        sm_glitch_samples=0;
+        return true;
+    }
+    // log not filter
+    AP::logger().Write("SMFV", "TimeUS,filt,raw","Qff", AP_HAL::micros64(),(double)0.0f,(double)reading_sm);
+    return false;
+}
+
+void Copter::failsafe_vibration_check()
+{
+    if (motors->armed()){ 
+          gcs().send_text(MAV_SEVERITY_CRITICAL,"MAV-vib: %d",vib_failsafe_flag);
+          if (!vib_failsafe_flag) {
+              Vector3f vib= AP::ins().get_vibration_levels();
+              //if (apply_vib_z_glitchfilter(vib.z)) {
+               if(((AP_HAL::millis() - vib_time_flag))*0.001 > 100) {   
+                  failsafe_vibration_on_event();
+              }
+               if (apply_vib_z_glitchfilter(vib.x)) {
+                  failsafe_vibration_on_event();
+              }
+               if (apply_vib_z_glitchfilter(vib.y)) {
+                  failsafe_vibration_on_event();
+              }
+              
+          }
+    } else if (!motors->armed()){
+        vib_failsafe_flag=0;
+        vib_time_flag= AP_HAL::millis();
+    } 
+}
+
+void Copter::failsafe_vibration_on_event()
+{
+    gcs().send_text(MAV_SEVERITY_WARNING, "VIBRATION ERROR");
+    FailsafeAction desired_action;
+    desired_action = FailsafeAction::RTL;
+    do_failsafe_action(desired_action, ModeReason:: VIB_FAILSAFE);
+    vib_failsafe_flag=1;
+}
+
+
+uint8_t Copter::apply_vib_x_glitchfilter(float vib)
+{
+    float vib_x=vib;
+    if (vib_x > g.glitch_vib_error_level) {
+         vibx_glitch_error_samples+=1;
+         if (vibx_glitch_error_samples> g.glitch_vib_num) {
+             AP::logger().Write("VIBX", "TimeUS,error,warning,raw","Qfff", AP_HAL::micros64(),(double)vib_x,(double)0.0f,(double)vib_x);
+             return 1;
+        }
+    } else if (vib_x > g.glitch_vib_warning_level) {
+                vibx_glitch_warning_samples+=1;
+                if (vibx_glitch_warning_samples> g.glitch_vib_num) {
+                     AP::logger().Write("VIBX", "TimeUS,error,warning,raw","Qfff", AP_HAL::micros64(),(double)0.0f,(double)vib_x,(double)vib_x);
+                     return 0;
+                 }
+    } else if (vib_x < g.glitch_vib_warning_level) {
+               vibx_glitch_warning_samples=0;
+               vibx_glitch_error_samples=0;
+    }
+    AP::logger().Write("VIBX", "TimeUS,error,warning,raw","Qfff", AP_HAL::micros64(),(double)0.0f,(double)0.0f,(double)vib_x);
+    return 0;
+}
+
+uint8_t Copter::apply_vib_y_glitchfilter(float vib)
+{
+    float vib_y=vib;
+    if (vib_y > g.glitch_vib_error_level) {
+         viby_glitch_error_samples+=1;
+         if (viby_glitch_error_samples> g.glitch_vib_num) {
+              AP::logger().Write("VIBY", "TimeUS,error,warning,raw","Qfff", AP_HAL::micros64(),(double)vib_y,(double)0.0f,(double)vib_y);
+              return 1;
+         }
+    } else if (vib_y > g.glitch_vib_warning_level) {
+                viby_glitch_warning_samples+=1;
+                if (viby_glitch_warning_samples> g.glitch_vib_num) {
+                    AP::logger().Write("VIBY", "TimeUS,error,warning,raw","Qfff", AP_HAL::micros64(),(double)0.0f,(double)vib_y,(double)vib_y);
+                    return 0;
+                }
+    } else if (vib_y < g.glitch_vib_warning_level) {
+                viby_glitch_warning_samples=0;
+                viby_glitch_error_samples=0;
+    }
+    AP::logger().Write("VIBY", "TimeUS,error,warning,raw","Qfff", AP_HAL::micros64(),(double)0.0f,(double)0.0f,(double)vib_y);
+    return 0;
+}
+
+uint8_t Copter::apply_vib_z_glitchfilter(float vib)
+{
+     float vib_z=vib;
+    if (vib_z > g.glitch_vib_error_level) {
+         vibz_glitch_error_samples+=1;
+         if (vibz_glitch_error_samples> g.glitch_vib_num) {
+             AP::logger().Write("VIBZ", "TimeUS,error,warning,raw","Qfff", AP_HAL::micros64(),(double)vib_z,(double)0.0f,(double)vib_z);
+             return 1;
+         }
+    } else if(vib_z > g.glitch_vib_warning_level) {
+          vibz_glitch_warning_samples+=1;
+          if (vibz_glitch_warning_samples> g.glitch_vib_num) {
+              AP::logger().Write("VIBZ", "TimeUS,error,warning,raw","Qfff", AP_HAL::micros64(),(double)0.0f,(double)vib_z,(double)vib_z);
+              return 0;
+          }
+    } else if(vib_z < g.glitch_vib_warning_level) {
+          vibz_glitch_warning_samples=0;
+          vibz_glitch_error_samples=0;
+    }
+    AP::logger().Write("VIBZ", "TimeUS,error,warning,raw","Qfff", AP_HAL::micros64(),(double)0.0f,(double)0.0f,(double)vib_z);
+    return 0;
+}
+
 // failsafe_gcs_on_event - actions to take when GCS contact is lost
 void Copter::failsafe_gcs_on_event(void)
 {

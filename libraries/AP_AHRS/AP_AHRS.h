@@ -614,6 +614,9 @@ public:
     // get access to an EKFGSF_yaw estimator
     const EKFGSF_yaw *get_yaw_estimator(void) const;
 
+    void set_sm_val(float sm) {_sm_max = sm;}
+    float get_sm_val() {return _sm_max;}
+    
 private:
 
     // optional view class
@@ -827,6 +830,8 @@ private:
     void Write_AHRS2(void) const;
     // write POS (canonical vehicle position) message out:
     void Write_POS(void) const;
+
+    float _sm_max = 0;
 
 #if HAL_NMEA_OUTPUT_ENABLED
     class AP_NMEA_Output* _nmea_out;

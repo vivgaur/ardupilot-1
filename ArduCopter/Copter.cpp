@@ -466,7 +466,7 @@ void Copter::update_batt_compass(void)
 {
     // read battery before compass because it may be used for motor interference compensation
     battery.read();
-
+    
     if(AP::compass().available()) {
         // update compass with throttle value - used for compassmot
         compass.set_throttle(motors->get_throttle());
@@ -564,6 +564,10 @@ void Copter::three_hz_loop()
     // check for deadreckoning failsafe
     failsafe_deadreckon_check();
 
+    failsafe_mag_interference_check();
+
+    failsafe_vibration_check();
+
 #if AC_FENCE == ENABLED
     // check if we have breached a fence
     fence_check();
@@ -583,7 +587,7 @@ void Copter::one_hz_loop()
     if (should_log(MASK_LOG_ANY)) {
         Log_Write_Data(LogDataID::AP_STATE, ap.value);
     }
-
+    
     if (!motors->armed()) {
         update_using_interlock();
 

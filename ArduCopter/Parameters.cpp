@@ -425,6 +425,16 @@ const AP_Param::Info Copter::var_info[] = {
     // @User: Advanced
     GSCALAR(rc_speed, "RC_SPEED",              RC_FAST_SPEED),
 
+     GSCALAR(glitch_sample_num, "GL_SM_NUM", GLITCH_SAMPLE_NUM_DEFAULT),
+
+     GSCALAR(glitch_sm_range, "GL_SM_RANGE", GLITCH_SM_RANGE_DEFAULT),
+
+     GSCALAR(glitch_vib_warning_level, "GL_VIB_WARN", GLITCH_VIB_WARN_DEFAULT),
+
+     GSCALAR(glitch_vib_error_level, "GL_VIB_ERROR", GLITCH_VIB_ERROR_DEFAULT),
+
+     GSCALAR(glitch_vib_num, "GL_VIB_NUM", GLITCH_VIB_NUM_DEFAULT),
+
     // @Param: ACRO_RP_P
     // @DisplayName: Acro Roll and Pitch P gain
     // @Description: Converts pilot roll and pitch into a desired rate of rotation in ACRO and SPORT mode.  Higher values mean faster rate of rotation.

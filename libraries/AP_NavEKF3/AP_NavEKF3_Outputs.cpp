@@ -439,6 +439,7 @@ void NavEKF3_core::getSynthAirDataInnovations(Vector2f &dragInnov, float &betaIn
 // also return the delta in position due to the last position reset
 bool NavEKF3_core::getVariances(float &velVar, float &posVar, float &hgtVar, Vector3f &magVar, float &tasVar, Vector2f &offset) const
 {
+    AP_AHRS &obj = AP::ahrs();
     velVar   = sqrtF(velTestRatio);
     posVar   = sqrtF(posTestRatio);
     hgtVar   = sqrtF(hgtTestRatio);
@@ -446,6 +447,10 @@ bool NavEKF3_core::getVariances(float &velVar, float &posVar, float &hgtVar, Vec
     magVar.x = sqrtF(MAX(magTestRatio.x,yawTestRatio));
     magVar.y = sqrtF(MAX(magTestRatio.y,yawTestRatio));
     magVar.z = sqrtF(MAX(magTestRatio.z,yawTestRatio));
+
+    float temp_var=fmaxF(fmaxF(magVar.x,magVar.y),magVar.z);
+    obj.set_sm_val(temp_var);
+
     tasVar   = sqrtF(tasTestRatio);
     offset   = posResetNE.tofloat();
 
